@@ -1,0 +1,8 @@
+{
+  "name": "INSCAPE your dream salon",
+  "description": "INSCAPE UNISEX SALON — Live customer price list, luxury hair, skin, bridal \u0026 grooming services, special offers, and centralized admin management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

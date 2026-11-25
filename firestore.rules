@@ -1,0 +1,152 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedAdminEmail() {
+      return isSignedIn()
+        && request.auth.token.email == 'phariprasath132007@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedAdminEmail()
+        || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['name', 'slug', 'isActive', 'sortOrder'])
+        && data.keys().hasOnly(['name', 'slug', 'description', 'imageUrl', 'isActive', 'sortOrder', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 80
+        && data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 80
+        && data.isActive is bool
+        && data.sortOrder is number && data.sortOrder >= 0 && data.sortOrder <= 1000;
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['name', 'categoryId', 'price', 'isActive', 'isFeatured', 'sortOrder'])
+        && data.keys().hasOnly(['name', 'categoryId', 'price', 'offerPrice', 'duration', 'description', 'imageUrl', 'isActive', 'isFeatured', 'sortOrder', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.categoryId is string && data.categoryId.size() >= 1 && data.categoryId.size() <= 80
+        && data.price is number && data.price >= 0 && data.price <= 1000000
+        && data.isActive is bool
+        && data.isFeatured is bool
+        && data.sortOrder is number && data.sortOrder >= 0 && data.sortOrder <= 1000;
+    }
+
+    function isValidOffer(data) {
+      return data.keys().hasAll(['title', 'discountPercent', 'startDate', 'endDate', 'isActive'])
+        && data.keys().hasOnly(['title', 'description', 'discountPercent', 'startDate', 'endDate', 'bannerUrl', 'applicableCategory', 'isActive', 'createdAt', 'updatedAt'])
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 100
+        && data.discountPercent is number && data.discountPercent >= 0 && data.discountPercent <= 100
+        && data.startDate is string && data.startDate.size() <= 20
+        && data.endDate is string && data.endDate.size() <= 20
+        && data.isActive is bool;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['salonName'])
+        && data.keys().hasOnly([
+          'salonName', 'tagline', 'phone', 'secondaryPhone', 'whatsapp', 'openingHours',
+          'address', 'ratingSummary', 'reviewPlatformsNote', 'appointmentPolicy',
+          'paymentMethods', 'accessibilityNote', 'mapsUrl', 'publicCustomerUrl',
+          'instagramUrl', 'facebookUrl', 'logoUrl', 'heroBackgroundUrl', 'aboutText', 'updatedAt'
+        ])
+        && data.salonName is string && data.salonName.size() >= 1 && data.salonName.size() <= 120;
+    }
+
+    function isValidActivityLog(data) {
+      return data.keys().hasAll(['action', 'entityType', 'details', 'adminUid', 'createdAt'])
+        && data.keys().hasOnly(['action', 'entityType', 'details', 'adminUid', 'adminEmail', 'createdAt'])
+        && data.action is string && data.action.size() <= 120
+        && data.entityType is string && data.entityType.size() <= 60
+        && data.details is string && data.details.size() <= 500
+        && data.adminUid == request.auth.uid
+        && data.createdAt == request.time;
+    }
+
+    function isValidMediaAsset(data) {
+      return data.keys().hasAll(['title', 'url', 'folder'])
+        && data.keys().hasOnly(['title', 'url', 'folder', 'createdAt'])
+        && data.title is string && data.title.size() <= 100
+        && data.url is string && data.url.size() <= 500
+        && data.folder in ['salon', 'service', 'banner', 'logo'];
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'isActive'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'isActive', 'createdAt'])
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 200
+        && data.role in ['owner', 'admin']
+        && data.isActive is bool;
+    }
+
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId) && (resource.data.isActive == true || isAdmin());
+      allow list: if resource.data.isActive == true || isAdmin();
+      allow create, update: if isValidId(categoryId) && isAdmin() && isValidCategory(incoming());
+      allow delete: if isValidId(categoryId) && isAdmin();
+    }
+
+    match /services/{serviceId} {
+      allow get: if isValidId(serviceId) && (resource.data.isActive == true || isAdmin());
+      allow list: if resource.data.isActive == true || isAdmin();
+      allow create, update: if isValidId(serviceId) && isAdmin() && isValidService(incoming());
+      allow delete: if isValidId(serviceId) && isAdmin();
+    }
+
+    match /offers/{offerId} {
+      allow get: if isValidId(offerId) && (resource.data.isActive == true || isAdmin());
+      allow list: if resource.data.isActive == true || isAdmin();
+      allow create, update: if isValidId(offerId) && isAdmin() && isValidOffer(incoming());
+      allow delete: if isValidId(offerId) && isAdmin();
+    }
+
+    match /salonSettings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if isAdmin();
+      allow create, update: if isValidId(settingId) && isAdmin() && isValidSettings(incoming());
+      allow delete: if false;
+    }
+
+    match /activityLogs/{logId} {
+      allow get: if isValidId(logId) && isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(logId) && isAdmin() && isValidActivityLog(incoming());
+      allow update, delete: if false;
+    }
+
+    match /mediaAssets/{assetId} {
+      allow get: if isValidId(assetId) && isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(assetId) && isAdmin() && isValidMediaAsset(incoming());
+      allow delete: if isValidId(assetId) && isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow get: if isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isValidId(adminId) && isAdmin() && isValidAdminRecord(incoming());
+      allow delete: if isValidId(adminId) && isAdmin() && adminId != request.auth.uid;
+    }
+
+    match /test/connection {
+      allow get: if true;
+    }
+  }
+}

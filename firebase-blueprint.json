@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "SalonCategory": {
+      "title": "SalonCategory",
+      "description": "Department or service category displayed on the live salon price list.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 80 },
+        "slug": { "type": "string", "maxLength": 80, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "description": { "type": "string", "maxLength": 240 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "isActive": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "slug", "isActive", "sortOrder"]
+    },
+    "SalonService": {
+      "title": "SalonService",
+      "description": "Individual salon treatment, haircut, color, facial, or bridal service.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "categoryId": { "type": "string", "maxLength": 80, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "price": { "type": "number" },
+        "offerPrice": { "type": "number" },
+        "duration": { "type": "string", "maxLength": 60 },
+        "description": { "type": "string", "maxLength": 360 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "isActive": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "categoryId", "price", "isActive", "isFeatured", "sortOrder"]
+    },
+    "SalonOffer": {
+      "title": "SalonOffer",
+      "description": "Promotional campaign or seasonal discount offer.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 360 },
+        "discountPercent": { "type": "number" },
+        "startDate": { "type": "string", "maxLength": 20 },
+        "endDate": { "type": "string", "maxLength": 20 },
+        "bannerUrl": { "type": "string", "maxLength": 500 },
+        "applicableCategory": { "type": "string", "maxLength": 80 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "discountPercent", "startDate", "endDate", "isActive"]
+    },
+    "SalonSettings": {
+      "title": "SalonSettings",
+      "description": "Global salon branding, contact details, hours, location, and policies.",
+      "type": "object",
+      "properties": {
+        "salonName": { "type": "string", "maxLength": 120 },
+        "tagline": { "type": "string", "maxLength": 240 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "secondaryPhone": { "type": "string", "maxLength": 40 },
+        "whatsapp": { "type": "string", "maxLength": 40 },
+        "openingHours": { "type": "string", "maxLength": 120 },
+        "address": { "type": "string", "maxLength": 260 },
+        "ratingSummary": { "type": "string", "maxLength": 160 },
+        "reviewPlatformsNote": { "type": "string", "maxLength": 160 },
+        "appointmentPolicy": { "type": "string", "maxLength": 240 },
+        "paymentMethods": { "type": "string", "maxLength": 240 },
+        "accessibilityNote": { "type": "string", "maxLength": 240 },
+        "mapsUrl": { "type": "string", "maxLength": 500 },
+        "publicCustomerUrl": { "type": "string", "maxLength": 500 },
+        "instagramUrl": { "type": "string", "maxLength": 500 },
+        "facebookUrl": { "type": "string", "maxLength": 500 },
+        "logoUrl": { "type": "string", "maxLength": 500 },
+        "heroBackgroundUrl": { "type": "string", "maxLength": 500 },
+        "aboutText": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["salonName"]
+    },
+    "ActivityLogEntry": {
+      "title": "ActivityLogEntry",
+      "description": "Immutable admin audit trail entry.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "maxLength": 120 },
+        "entityType": { "type": "string", "maxLength": 60 },
+        "details": { "type": "string", "maxLength": 500 },
+        "adminUid": { "type": "string", "maxLength": 128 },
+        "adminEmail": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "entityType", "details", "adminUid", "createdAt"]
+    },
+    "MediaAsset": {
+      "title": "MediaAsset",
+      "description": "Uploaded or linked salon image asset.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 100 },
+        "url": { "type": "string", "maxLength": 500 },
+        "folder": { "type": "string", "enum": ["salon", "service", "banner", "logo"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "url", "folder"]
+    },
+    "AdminUserRecord": {
+      "title": "AdminUserRecord",
+      "description": "Authorized salon administrator record.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 200 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["owner", "admin"] },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "isActive"]
+    }
+  },
+  "firestore": {
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/SalonCategory" },
+      "description": "Salon service categories"
+    },
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/SalonService" },
+      "description": "Salon services and pricing"
+    },
+    "/offers/{offerId}": {
+      "schema": { "$ref": "#/entities/SalonOffer" },
+      "description": "Promotional campaigns"
+    },
+    "/salonSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/SalonSettings" },
+      "description": "Salon public settings document"
+    },
+    "/activityLogs/{logId}": {
+      "schema": { "$ref": "#/entities/ActivityLogEntry" },
+      "description": "Admin activity log trail"
+    },
+    "/mediaAssets/{assetId}": {
+      "schema": { "$ref": "#/entities/MediaAsset" },
+      "description": "Gallery media asset index"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminUserRecord" },
+      "description": "Authorized admin accounts"
+    }
+  }
+}
